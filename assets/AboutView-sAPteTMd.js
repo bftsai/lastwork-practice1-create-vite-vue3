@@ -1,0 +1,1 @@
+import{_ as e,c as s,o as t,a as o}from"./index-rIEeMffM.js";const a={data(){return{}},created(){console.log("bftsai"),console.log("https://ec-course-api.hexschool.io/")}},c={class:"about"},n=o("div",{class:"container"},[o("h1",null,"This is an about page")],-1),r=[n];function i(_,l,d,p,u,h){return t(),s("div",c,r)}const b=e(a,[["render",i]]);export{b as default};
