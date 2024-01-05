@@ -6,23 +6,65 @@ import HelloWorld from './components/HelloWorld.vue'
 <template>
   <header class="pt-3">
     <div class="container">
-      <div class="row flex-nowrap justify-content-between">
-        <img alt="Vue logo" class="logo col-4" src="@/assets/logo.svg" width="125" height="125" />
-        <div class="wrapper col-7">
+      <div class="row flex-nowrap justify-content-between align-items-center">
+        <div class="col-10">
           <nav>
-            <RouterLink to="/">Home</RouterLink>
-            <RouterLink to="/about">About</RouterLink>
-            <RouterLink to="/member">Member</RouterLink>
+            <RouterLink class="fs-md-4 fs-6" to="/">Home</RouterLink>
+            <RouterLink class="fs-md-4 fs-6" to="/about">About</RouterLink>
+            <RouterLink class="fs-md-4 fs-6" to="/member">Member</RouterLink>
           </nav>
+        </div>
+        <div class="col-2">
+          <RouterLink type="button" class="btn btn-outline-primary fs-md-4 fs-6" to="/member" v-if="isMember">{{ isLogin? '會員中心':'登入' }}</RouterLink>
+          <div id="logBtn"></div>
         </div>
       </div>
     </div>
   </header>
 
-  <RouterView />
+  <RouterView @emit-member="isMemberPage" :isLogin="isLogin"/>
 </template>
-
-<style scoped>
+<script>
+export default {
+  data(){
+    return {
+      token: '',
+      isMember: true,
+      isLogin: false,
+    }
+  },
+  methods: {
+    isMemberPage(value){
+      this.isMember=value;
+      this.checkLogin();
+    },
+    findCookie(str){
+      const reg=new RegExp(`${str}`);
+      if(reg.test(document.cookie)){
+        this.token=document.cookie.split(`${str}=`)[1];
+        this.isLogin=true;
+        return true;
+      }else{
+        this.isLogin=false;
+      }
+    },
+    checkLogin(){
+      return this.findCookie('hexToken');
+    },
+    logOut(e){
+      if(e.target.textContent==='登出'){
+        console.log('logout');
+      }else{
+        return;
+      }
+    },
+  },
+  created(){
+    this.checkLogin();
+  }
+}
+</script>
+<style lang="scss">
 header {
   line-height: 1.5;
   max-height: 100vh;

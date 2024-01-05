@@ -12,9 +12,18 @@ export default {
 
     }
   },
+  methods: {
+    isMemberPage(){
+      if(location.href.split('#/')[1]==='member'){
+            console.log('member');
+            this.$emit('emit-member',false);
+          }else{
+            this.$emit('emit-member',true);
+          }
+    },
+  },
   created(){
-    console.log(import.meta.env.VITE_HEX_APIKEY);
-    console.log(import.meta.env.VITE_HEX_API);
+    this.isMemberPage();
   }
 }
 </script>

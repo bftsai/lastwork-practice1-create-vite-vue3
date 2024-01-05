@@ -1,11 +1,15 @@
 <template>
     <div class="member">
-        <div class="section">
+        <img src="../assets/images/loading2.svg" alt="" class="position-absolute start-50 top-50 translate-middle z-1" v-if="loading">
+        <teleport to='#logBtn' v-if="isLogin">
+          <button class="btn btn-outline-primary fs-md-4 fs-6" @click="logout">登出</button>
+        </teleport>
+        <div class="section" v-if="!isLogin">
             <div class="container">
                 <div class="row full-height justify-content-center">
                     <div class="col-12 text-center align-self-center py-5">
                         <div class="section pb-5 pt-5 pt-sm-2 text-center">
-                            <h6 class="mb-0 pb-3"><span>Log In </span><span>Sign Up</span></h6>
+                            <h6 class="mb-0 pb-3 fs-md-4 fs-6"><span>Log In </span><span>Sign Up</span></h6>
                             <input class="checkbox" type="checkbox" id="reg-log" name="reg-log"/>
                             <label for="reg-log"></label>
                             <div class="card-3d-wrap mx-auto">
@@ -13,7 +17,7 @@
                                     <div class="card-front">
                                         <div class="center-wrap">
                                             <v-form class="section text-center" @submit="onSubmit" v-slot="{errors}">
-                                                <h4 class="mb-4 pb-3">Log In</h4>
+                                                <h4 class="mb-4 pb-3 fs-md-4 fs-6">Log In</h4>
                                                 <div class="form-group">
                                                     <v-field type="email" name="email" :class="{'is-invalid':errors['email']}" class="form-style" placeholder="Your Email" autocomplete="off" rules="email|required" v-model="user.username"></v-field>
                                                     <error-message name="email" class="invalid-feedback"></error-message>
@@ -31,20 +35,20 @@
                                     </div>
                                     <div class="card-back">
                                         <div class="center-wrap">
-                                            <v-form class="section text-center" @submit="onSubmit" v-slot="{errors}">
-                                                <h4 class="mb-4 pb-3">Sign Up</h4>
+                                            <v-form class="section text-center" @submit="onSubmitSingUp" v-slot="{errors}">
+                                                <h4 class="mb-4 pb-3 fs-md-4 fs-6">Sign Up</h4>
                                                 <div class="form-group">
-                                                    <v-field type="text" name="姓名" :class="{'is-invalid': errors['姓名']}" class="form-style" placeholder="Your Full Name" autocomplete="off" rules="required"></v-field>
+                                                    <v-field type="text" name="姓名" :class="{'is-invalid': errors['姓名']}" class="form-style" placeholder="Your Full Name" autocomplete="off" rules="required" v-model="signUser.fullname"></v-field>
                                                     <error-message name="姓名" class="invalid-feedback"></error-message>
                                                     <i class="input-icon uil uil-user"></i>
                                                 </div>	
                                                 <div class="form-group mt-2">
-                                                    <v-field type="email" name="信箱" :class="{'is-invalid': errors['信箱']}" class="form-style" placeholder="Your Email" autocomplete="off" rules="email|required" v-model="user.username"></v-field>
+                                                    <v-field type="email" name="信箱" :class="{'is-invalid': errors['信箱']}" class="form-style" placeholder="Your Email" autocomplete="off" rules="email|required" v-model="signUser.username"></v-field>
                                                     <error-message name="信箱" class="invalid-feedback"></error-message>
                                                     <i class="input-icon uil uil-at"></i>
                                                 </div>	
                                                 <div class="form-group mt-2">
-                                                    <v-field type="password" name="密碼" :class="{'is-invalid': errors['密碼']}" class="form-style" placeholder="Your Password" autocomplete="off" :rules="isPwd" v-model="user.password"></v-field>
+                                                    <v-field type="password" name="密碼" :class="{'is-invalid': errors['密碼']}" class="form-style" placeholder="Your Password" autocomplete="off" :rules="isPwd" v-model="signUser.password"></v-field>
                                                     <error-message name="密碼" class="invalid-feedback"></error-message>
                                                     <i class="input-icon uil uil-lock-alt"></i>
                                                 </div>
@@ -86,36 +90,90 @@ configure({
   }),
   validateOnInput: true, // 當輸入任何內容直接進行驗證
 });
-// import axios from "axios";
+import Swal from 'sweetalert2/dist/sweetalert2.js'
+
+
 export default {
     data(){
         return {
-            user:{
-                "username": "",
-                "password": ""
-            },
+          signUser:{
+              "fullname": "",
+              "username": "",
+              "password": "",
+          },
+          user:{
+              "username": "", //tsai19911026@gmail.com
+              "password": ""
+          },
+          loading: false,
         }
     },
+    props: ['isLogin'],
     components: {
         VForm: Form,
         VField: Field,
         ErrorMessage,
     },
     methods: {
+        isMemberPage(){
+          if(location.href.split('#/')[1]==='member'){
+            this.$emit('emit-member',false);
+          }else{
+            this.$emit('emit-member',true);
+          }
+        },
         async onSubmit(){
-            // this.axios.post(`${import.meta.env.VITE_HEX_API}v2/admin/signin`,this.user)
-            //     .then(res=>{
-            //         console.log(res.data);
-            //     })
-            //     .catch(err=>{
-            //         console.log(err);
-            // })
             try {
+                this.loading=true;
                 const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}v2/admin/signin`,this.user)).data;
                 console.log(result);
+                document.cookie=`hexToken=${result.token};expires=${result.required}`;
+                this.axios.defaults.headers.common['Authorization'] = result.token;
+                this.user.username='';
+                this.user.password='';
+                this.loading=false;
+                Swal.fire({
+                  icon: "success",
+                  title: "Login Successful",
+                  showConfirmButton: false,
+                  timer: 800,
+                });
+                this.isMemberPage();
             } catch (err) {
                 console.log(err);
+                this.loading=false;
+                this.logout();
             }
+        },
+        onSubmitSingUp(){
+          this.signUser.fullname='';
+          this.signUser.username='';
+          this.signUser.password='';
+          Swal.fire({
+              icon: "info",
+              title: "尚未開放註冊",
+              showConfirmButton: false,
+              timer: 800
+            });
+        },
+        async logout(){
+          try {
+            this.loading=true;
+            const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}/v2/logout`));
+            console.log(result);
+            document.cookie=`hexToken='';expires=Thu, 01 Jan 1970 00:00:00 UTC`;
+            this.loading=false;
+            Swal.fire({
+              icon: "success",
+              title: "LogOut Successful",
+              showConfirmButton: false,
+              timer: 800
+            });
+            this.isMemberPage();
+          } catch (err) {
+            console.log(err);
+            this.loading=false;
+          }
         },
         isPwd(value){
             const reg=new RegExp('^[\\w]{8,}$');
@@ -127,11 +185,18 @@ export default {
         }
     },
     created(){
-        
+        this.isMemberPage();
+        // Swal.fire({
+        //   icon: "success",
+        //   title: "Login Successful",
+        //   showConfirmButton: false,
+        //   // timer: 1500,
+        // });
     }
 }
 </script>
 <style lang="scss">
+@import '@sweetalert2/theme-dark/dark.scss';
 .link {
   color: #c4c3ca;
 }
@@ -344,45 +409,5 @@ h6 span{
   opacity: 0;
   -webkit-transition: all 200ms linear;
     transition: all 200ms linear;
-}
-
-.btn{  
-  border-radius: 4px;
-  height: 44px;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  -webkit-transition : all 200ms linear;
-  transition: all 200ms linear;
-  padding: 0 30px;
-  letter-spacing: 1px;
-  display: -webkit-inline-flex;
-  display: -ms-inline-flexbox;
-  display: inline-flex;
-  -webkit-align-items: center;
-  -moz-align-items: center;
-  -ms-align-items: center;
-  align-items: center;
-  -webkit-justify-content: center;
-  -moz-justify-content: center;
-  -ms-justify-content: center;
-  justify-content: center;
-  -ms-flex-pack: center;
-  text-align: center;
-  border: none;
-  background-color: #ffeba7;
-  color: #102770;
-  box-shadow: 0 8px 24px 0 rgba(255,235,167,.2);
-}
-.btn:active,
-.btn:focus{  
-  background-color: #102770;
-  color: #ffeba7;
-  box-shadow: 0 8px 24px 0 rgba(16,39,112,.2);
-}
-.btn:hover{  
-  background-color: #102770;
-  color: #ffeba7;
-  box-shadow: 0 8px 24px 0 rgba(16,39,112,.2);
 }
 </style>
