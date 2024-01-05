@@ -1,5 +1,4 @@
 <script>
-import TheWelcome from '../components/TheWelcome.vue';
 export default {
   data(){
     return {
@@ -15,9 +14,6 @@ export default {
           }
     },
   },
-  components: {
-    TheWelcome
-  },
   created(){
     this.isMemberPage();
   }
@@ -27,7 +23,7 @@ export default {
 <template>
   <main>
     <div class="container">
-      <TheWelcome />
+      <h1 class="fs-4 fs-lg-1">Vue3 practice</h1>
     </div>
   </main>
 </template>

@@ -1,30 +1,38 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
   <header class="pt-3">
-    <div class="container">
-      <div class="row flex-nowrap justify-content-between align-items-center">
-        <div class="col-10">
-          <nav>
-            <RouterLink class="fs-md-4 fs-6" to="/">Home</RouterLink>
-            <RouterLink class="fs-md-4 fs-6" to="/about">About</RouterLink>
-            <RouterLink class="fs-md-4 fs-6" to="/member">Member</RouterLink>
-          </nav>
+    <nav class="navbar navbar-expand-lg">
+      <div class="container align-items-start">
+        <div class="col-8 col-lg-10">
+          <button class="navbar-toggler btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" @click="toggleCollapse">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent" ref="collapse">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <RouterLink class="nav-link fs-md-4 fs-6" to="/" aria-current="page">Home</RouterLink>
+              </li>
+              <li class="nav-item">
+                <RouterLink class="nav-link fs-md-4 fs-6" to="/about">About</RouterLink>
+              </li>
+              <li class="nav-item">
+                <RouterLink class="nav-link fs-md-4 fs-6" to="/member">Member</RouterLink>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div class="col-2">
+        <div class="col-4 col-lg-2">
           <RouterLink type="button" class="btn btn-outline-primary fs-md-4 fs-6" to="/member" v-if="isMember">{{ isLogin? '會員中心':'登入' }}</RouterLink>
           <div id="logBtn"></div>
         </div>
       </div>
-    </div>
+    </nav>
   </header>
 
   <RouterView @emit-member="isMemberPage" :isLogin="isLogin"/>
 </template>
 <script>
+// import bootstrap from 'bootstrap';
+
 export default {
   data(){
     return {
@@ -58,72 +66,24 @@ export default {
         return;
       }
     },
+    toggleCollapse(){
+      if(this.$refs.collapse.className.includes('show')){
+        this.$refs.collapse.classList.remove('show');
+      }else{
+        this.$refs.collapse.classList.add('show');
+      }
+    },
   },
   created(){
     this.checkLogin();
+  },
+  mounted(){
+    
   }
 }
 </script>
 <style lang="scss">
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.collapse{
+  transition: all 0.4s ease;
 }
 </style>
