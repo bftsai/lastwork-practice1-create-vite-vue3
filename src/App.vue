@@ -15,6 +15,9 @@
                 <RouterLink class="nav-link fs-md-4 fs-6" to="/about">About</RouterLink>
               </li>
               <li class="nav-item">
+                <RouterLink class="nav-link fs-md-4 fs-6" to="/dashboard">Dashboard</RouterLink>
+              </li>
+              <li class="nav-item">
                 <RouterLink class="nav-link fs-md-4 fs-6" to="/member">Member</RouterLink>
               </li>
             </ul>

@@ -127,7 +127,7 @@ export default {
                 this.loading=true;
                 const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}v2/admin/signin`,this.user)).data;
                 console.log(result);
-                document.cookie=`hexToken=${result.token};expires=${result.required}`;
+                document.cookie=`hexToken=${result.token};expires=${new Date(result.required)}`;
                 this.axios.defaults.headers.common['Authorization'] = result.token;
                 this.user.username='';
                 this.user.password='';
@@ -138,7 +138,8 @@ export default {
                   showConfirmButton: false,
                   timer: 800,
                 });
-                this.isMemberPage();
+                // this.isMemberPage();
+                this.$router.push('dashboard');
             } catch (err) {
                 console.log(err);
                 this.loading=false;
@@ -155,6 +156,28 @@ export default {
               showConfirmButton: false,
               timer: 800
             });
+        },
+        async checkLogin(){
+          try{
+            this.loading=true;
+            const token=document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,"$1",);
+            this.axios.defaults.headers.common['Authorization'] = token;
+            const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}/v2/api/user/check`)).data;
+            console.log(result);
+            this.loading=false;
+            if(!result.success){
+              Swal.fire({
+                icon: "error",
+                title: `${result.message}`,
+                showConfirmButton: false,
+                timer: 800
+              });
+              this.logout();
+              this.$router.push('member')
+            }
+          }catch(err){
+            console.log(err);
+          }
         },
         async logout(){
           try {
@@ -192,6 +215,9 @@ export default {
         //   showConfirmButton: false,
         //   // timer: 1500,
         // });
+    },
+    mounted(){
+      
     }
 }
 </script>
