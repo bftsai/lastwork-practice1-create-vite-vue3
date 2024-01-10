@@ -20,9 +20,13 @@ export default {
             this.$emit('emit-member',true);
           }
     },
+    isDashboardPage(){
+      this.$emit('emit-dashboard-page');
+    },
   },
   created(){
     this.isMemberPage();
+    this.isDashboardPage();
   }
 }
 </script>

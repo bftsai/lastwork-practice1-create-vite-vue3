@@ -1,6 +1,9 @@
 <template>
+  <div class="loadingBlock position-absolute z-1" v-if="loading">
+    <img src="../src/assets/images/loading2.svg" alt="" class="position-absolute start-50 top-50 translate-middle">
+  </div>
   <header class="pt-3">
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg" v-show="!isDashboard">
       <div class="container align-items-start">
         <div class="col-8 col-lg-10">
           <button class="navbar-toggler btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" @click="toggleCollapse">
@@ -31,7 +34,7 @@
     </nav>
   </header>
 
-  <RouterView @emit-member="isMemberPage" :isLogin="isLogin"/>
+  <RouterView @emit-member="isMemberPage" :isLogin="isLogin" @emit-toggle-loading="toggleLoading" @emit-dashboard-page="isDashboardPage"></RouterView>
 </template>
 <script>
 // import bootstrap from 'bootstrap';
@@ -41,13 +44,21 @@ export default {
     return {
       token: '',
       isMember: true,
+      isDashboard: false,
       isLogin: false,
+      loading: false,
     }
   },
   methods: {
+    toggleLoading(){
+      this.loading=!this.loading;
+    },
     isMemberPage(value){
       this.isMember=value;
       this.checkLogin();
+    },
+    isDashboardPage(){
+      return this.isDashboard=location.href.split('/#/')[1].includes('dashboard');
     },
     findCookie(str){
       const reg=new RegExp(`${str}`);
@@ -78,6 +89,7 @@ export default {
     },
   },
   created(){
+    this.isDashboardPage();
     this.checkLogin();
   },
   mounted(){
@@ -86,6 +98,13 @@ export default {
 }
 </script>
 <style lang="scss">
+.loadingBlock{
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #000000a4;
+}
 .collapse{
   transition: all 0.4s ease;
 }

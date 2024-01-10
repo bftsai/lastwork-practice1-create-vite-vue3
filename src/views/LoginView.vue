@@ -1,6 +1,5 @@
 <template>
     <div class="member">
-        <img src="../assets/images/loading2.svg" alt="" class="position-absolute start-50 top-50 translate-middle z-1" v-if="loading">
         <teleport to='#logBtn' v-if="isLogin">
           <button class="btn btn-outline-primary fs-md-4 fs-6" @click="logout">登出</button>
         </teleport>
@@ -105,7 +104,6 @@ export default {
               "username": "", //tsai19911026@gmail.com
               "password": ""
           },
-          loading: false,
         }
     },
     props: ['isLogin'],
@@ -122,16 +120,19 @@ export default {
             this.$emit('emit-member',true);
           }
         },
+        isDashboardPage(){
+          this.$emit('emit-dashboard-page');
+        },
         async onSubmit(){
             try {
-                this.loading=true;
+                this.$emit('emit-toggleLoading');
                 const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}v2/admin/signin`,this.user)).data;
-                console.log(result);
+                
                 document.cookie=`hexToken=${result.token};expires=${new Date(result.required)}`;
                 this.axios.defaults.headers.common['Authorization'] = result.token;
                 this.user.username='';
                 this.user.password='';
-                this.loading=false;
+                this.$emit('emit-toggleLoading');
                 Swal.fire({
                   icon: "success",
                   title: "Login Successful",
@@ -139,10 +140,10 @@ export default {
                   timer: 800,
                 });
                 // this.isMemberPage();
-                this.$router.push('dashboard');
+                this.$router.push('dashboard/products');
             } catch (err) {
                 console.log(err);
-                this.loading=false;
+                this.$emit('emit-toggleLoading');
                 this.logout();
             }
         },
@@ -159,12 +160,12 @@ export default {
         },
         async checkLogin(){
           try{
-            this.loading=true;
+            this.$emit('emit-toggleLoading');
             const token=document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,"$1",);
             this.axios.defaults.headers.common['Authorization'] = token;
             const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}/v2/api/user/check`)).data;
             console.log(result);
-            this.loading=false;
+            this.$emit('emit-toggleLoading');
             if(!result.success){
               Swal.fire({
                 icon: "error",
@@ -176,16 +177,17 @@ export default {
               this.$router.push('member')
             }
           }catch(err){
+            this.$emit('emit-toggleLoading');
             console.log(err);
           }
         },
         async logout(){
           try {
-            this.loading=true;
+            this.$emit('emit-toggleLoading');
             const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}/v2/logout`));
             console.log(result);
             document.cookie=`hexToken='';expires=Thu, 01 Jan 1970 00:00:00 UTC`;
-            this.loading=false;
+            this.$emit('emit-toggleLoading');
             Swal.fire({
               icon: "success",
               title: "LogOut Successful",
@@ -195,7 +197,8 @@ export default {
             this.isMemberPage();
           } catch (err) {
             console.log(err);
-            this.loading=false;
+            document.cookie=`hexToken='';expires=Thu, 01 Jan 1970 00:00:00 UTC`;
+            this.$emit('emit-toggleLoading');
           }
         },
         isPwd(value){
@@ -208,16 +211,11 @@ export default {
         }
     },
     created(){
-        this.isMemberPage();
-        // Swal.fire({
-        //   icon: "success",
-        //   title: "Login Successful",
-        //   showConfirmButton: false,
-        //   // timer: 1500,
-        // });
+        
     },
     mounted(){
-      
+      this.isMemberPage();
+      this.isDashboardPage();
     }
 }
 </script>
