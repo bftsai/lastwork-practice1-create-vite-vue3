@@ -28,12 +28,15 @@
         </tr>
     </tbody>
     </table>
+    <ProductModal></ProductModal>
 </template>
 <script>
 const api_url=import.meta.env.VITE_HEX_API;
 const api_path=import.meta.env.VITE_HEX_APIKEY;
 
-import Swal from 'sweetalert2/dist/sweetalert2.js'
+import Swal from 'sweetalert2/dist/sweetalert2.js';
+
+import ProductModal from '../components/ProductModal.vue';
 export default {
     data(){
         return {
@@ -41,9 +44,13 @@ export default {
             pagination: {},
         }
     },
+    components: {
+        ProductModal,
+    },
     methods:{
         async getProducts(page){
             try {
+                // this.$emit('emit-toggleLoading');
                 const result = (await this.axios.get(`${api_url}v2/api/${api_path}/admin/products?page=${page}`)).data;
                 if(result.success){
                     Swal.fire({
