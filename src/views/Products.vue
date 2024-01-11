@@ -1,5 +1,8 @@
 <template>
     <h1>Products List</h1>
+    <div class="text-end">
+        <button type="button" class="btn btn-primary" @click="openAddProductModal">增加產品</button>
+    </div>
     <table class="table-dark table table-hover mt-4">
     <thead>
         <tr class="line-height-60">
@@ -22,13 +25,14 @@
                 <span class="text-secondary" v-else>未啟用</span>
             </td>
             <td>
-                <button type="button" class="btn btn-outline-primary btn-sm me-3">編輯</button>
-                <button type="button" class="btn btn-outline-primary btn-sm">刪除</button>
+                <button type="button" class="btn btn-outline-primary btn-sm me-3" @click="openEditProductModal(item)">編輯</button>
+                <button type="button" class="btn btn-outline-primary btn-sm" @click="deleteProductModal(item)">刪除</button>
             </td>
         </tr>
     </tbody>
     </table>
-    <ProductModal></ProductModal>
+    <ProductModal ref="productModal" :product="tempProduct" :edit-product="tempProduct" @emit-post-product="postProduct" @emit-path-product="pathProduct" @emit-hide-modal="hideModal"></ProductModal>
+    <DeleteModal ref="deleteModal"></DeleteModal>
 </template>
 <script>
 const api_url=import.meta.env.VITE_HEX_API;
@@ -37,24 +41,54 @@ const api_path=import.meta.env.VITE_HEX_APIKEY;
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 
 import ProductModal from '../components/ProductModal.vue';
+import DeleteModal from '../components/DeleteModal.vue';
 export default {
     data(){
         return {
             products: [],
             pagination: {},
+            tempProduct: {},
         }
     },
     components: {
         ProductModal,
+        DeleteModal,
     },
+    emits: ['emit-toggleLoading','emit-toggle-loading'],
     methods:{
+        async checkLogin(){
+            try{
+                this.$emit('emit-toggleLoading');
+                const token=document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,"$1",);
+                this.axios.defaults.headers.common['Authorization'] = token;
+                const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}/v2/api/user/check`)).data;
+                // console.log(result);
+                this.$emit('emit-toggleLoading');
+                if(!result.success){
+                    Swal.fire({
+                        icon: "error",
+                        title: `${result.message}`,
+                        showConfirmButton: false,
+                        timer: 800
+                    });
+                    this.logout();
+                    this.$router.push({name:'member'});
+                }else{
+                    this.getProducts(1);
+                }
+            }catch(err){
+                console.log(err);
+                this.$router.push({name:'member'});
+                this.$emit('emit-toggleLoading');
+            }
+        },
         async getProducts(page){
             try {
-                // this.$emit('emit-toggleLoading');
+                this.$emit('emit-toggleLoading');
                 const result = (await this.axios.get(`${api_url}v2/api/${api_path}/admin/products?page=${page}`)).data;
                 if(result.success){
                     Swal.fire({
-                        title: 'Success!',
+                        title: '已取得產品列表!',
                         icon: 'success',
                         showConfirmButton: false,
                         timer: 1500,
@@ -69,9 +103,11 @@ export default {
                         timer: 1500,
                     });
                 }
+                this.$emit('emit-toggleLoading');
                 console.log(this.products,this.pagination);
             } catch (err) {
                 console.log(err.response);
+                this.$emit('emit-toggleLoading');
                 Swal.fire({
                     title: 'Error!',
                     icon: 'error',
@@ -80,10 +116,102 @@ export default {
                 });
                 this.$router.push({name:'member'});
             }
+        },
+        async postProduct(item){
+            try {
+                this.$refs.productModal.hideModal();
+                console.log('post product',item);
+                const result = (await this.axios.post(`${api_url}v2/api/${api_path}/admin/product`,{data:item})).data;
+                console.log(result);
+                if(result.success){
+                    Swal.fire({
+                        title: result.message,
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                    this.getProducts(1);
+                }else{
+                    Swal.fire({
+                        title: result.message,
+                        icon: 'error',
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                }
+                this.tempProduct={};
+            } catch (err) {
+                console.log(err.response);
+                    Swal.fire({
+                        title: err.response,
+                        icon: 'error',
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                this.tempProduct={};
+            }
+        },
+        async pathProduct(item){
+            try {
+                this.$refs.productModal.hideModal();
+                this.$emit('emit-toggleLoading');
+                const id=item.id;
+                const result = (await this.axios.put(`${api_url}v2/api/${api_path}/admin/product/${id}`,{data:item})).data;
+                this.$emit('emit-toggleLoading');
+                if(result.success){
+                    Swal.fire({
+                        title: result.message,
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                    this.getProducts(1);
+                }else{
+                    Swal.fire({
+                        title: result.message,
+                        icon: 'error',
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                }
+                console.log(result);
+                this.tempProduct={};
+            } catch (err) {
+                this.$emit('emit-toggleLoading');
+                console.log(err.response);
+                Swal.fire({
+                        title: err.response,
+                        icon: 'error',
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                this.tempProduct={};
+            }
+        },
+        openAddProductModal(){
+            this.tempProduct={
+                imageUrl:'',
+                imagesUrl:[]
+            };
+            this.$refs.productModal.showModal();
+        },
+        openEditProductModal(product){
+            this.tempProduct=product;
+            this.$refs.productModal.showModal();
+        },
+        deleteProductModal(product){
+            console.log(product);
+            this.$refs.deleteModal.showModal();
+        },
+        hideModal(){
+            this.tempProduct={};
         }
     },
     created(){
-        this.getProducts(1)
+        
+    },
+    mounted(){
+        this.checkLogin();
     }
 }
 </script>

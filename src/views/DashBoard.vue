@@ -1,7 +1,10 @@
 <template>
+  <div class="loadingBlock position-absolute z-1" v-if="loading">
+    <img src="../assets/images/loading2.svg" alt="" class="position-absolute start-50 top-50 translate-middle">
+  </div>
   <Navbar></Navbar>
   <div class="container-fluid">
-    <router-view></router-view>
+    <router-view @emit-toggle-loading="toggleLoading"></router-view>
   </div>
 </template>
 <script>
@@ -14,7 +17,7 @@ import Navbar from '../components/Navbar.vue';
 export default {
   data(){
     return {
-
+      loading: false,
     }
   },
   emits: ['emit-member','emit-toggleLoading','emitToggleLoading','emit-dashboard-page'],
@@ -23,6 +26,9 @@ export default {
     Navbar,
   },
   methods: {
+    toggleLoading(){
+      this.loading=!this.loading;
+    },
     isMemberPage(){
       if(location.href.split('#/')[1]==='member'){
             this.$emit('emit-member',false);
@@ -32,30 +38,6 @@ export default {
     },
     isDashboardPage(){
       this.$emit('emit-dashboard-page');
-    },
-    async checkLogin(){
-      try{
-        this.$emit('emit-toggleLoading');
-        const token=document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,"$1",);
-        this.axios.defaults.headers.common['Authorization'] = token;
-        const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}/v2/api/user/check`)).data;
-        // console.log(result);
-        this.$emit('emit-toggleLoading');
-        if(!result.success){
-          Swal.fire({
-            icon: "error",
-            title: `${result.message}`,
-            showConfirmButton: false,
-            timer: 800
-          });
-          this.logout();
-          this.$router.push('member')
-        }
-      }catch(err){
-        console.log(err);
-        this.$router.push('member');
-        this.$emit('emit-toggleLoading');
-      }
     },
     async logout(){
         try {
@@ -89,7 +71,15 @@ export default {
   created(){
     this.isMemberPage();
     this.isDashboardPage()
-    this.checkLogin();
   }
 }
 </script>
+<style lang="scss">
+.loadingBlock{
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #000000a4;
+}
+</style>
