@@ -24,6 +24,7 @@ const router = createRouter({
       children: [
         {
           path: 'products',
+          name: 'products',
           component: () => import('../views/Products.vue'),
         }
       ]

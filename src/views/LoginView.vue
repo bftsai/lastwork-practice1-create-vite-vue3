@@ -1,9 +1,10 @@
 <template>
+    <Loading :prop-boolean="isLoading"></Loading>
     <div class="member">
-        <teleport to='#logBtn' v-if="isLogin">
+        <teleport to='#logBtn' v-if="checkLogin">
           <button class="btn btn-outline-primary fs-md-4 fs-6" @click="logout">登出</button>
         </teleport>
-        <div class="section" v-if="!isLogin">
+        <div class="section" v-if="!checkLogin">
             <div class="container">
                 <div class="row full-height justify-content-center">
                     <div class="col-12 text-center align-self-center py-5">
@@ -89,7 +90,8 @@ configure({
   }),
   validateOnInput: true, // 當輸入任何內容直接進行驗證
 });
-import Swal from 'sweetalert2/dist/sweetalert2.js'
+import Swal from 'sweetalert2/dist/sweetalert2.js';
+import Loading from '../components/Loading.vue';
 
 
 export default {
@@ -104,13 +106,15 @@ export default {
               "username": "", //tsai19911026@gmail.com
               "password": ""
           },
+          isLoading: false,
         }
     },
-    props: ['isLogin'],
+    emits: ['emit-member','emit-dashboard-page'],
     components: {
         VForm: Form,
         VField: Field,
         ErrorMessage,
+        Loading,
     },
     methods: {
         isMemberPage(){
@@ -125,14 +129,14 @@ export default {
         },
         async onSubmit(){
             try {
-                this.$emit('emit-toggleLoading');
+                this.isLoading=true;
                 const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}v2/admin/signin`,this.user)).data;
                 
                 document.cookie=`hexToken=${result.token};expires=${new Date(result.required)}`;
                 this.axios.defaults.headers.common['Authorization'] = result.token;
                 this.user.username='';
                 this.user.password='';
-                this.$emit('emit-toggleLoading');
+                this.isLoading=false;
                 Swal.fire({
                   icon: "success",
                   title: "Login Successful",
@@ -143,14 +147,16 @@ export default {
                 this.$router.push('dashboard/products');
             } catch (err) {
                 console.log(err);
-                this.$emit('emit-toggleLoading');
+                this.isLoading=false;
                 this.logout();
             }
         },
         onSubmitSingUp(){
+          this.isLoading=true;
           this.signUser.fullname='';
           this.signUser.username='';
           this.signUser.password='';
+          this.isLoading=false;
           Swal.fire({
               icon: "info",
               title: "尚未開放註冊",
@@ -160,12 +166,12 @@ export default {
         },
         async checkLogin(){
           try{
-            this.$emit('emit-toggleLoading');
+            this.isLoading=true;
             const token=document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,"$1",);
             this.axios.defaults.headers.common['Authorization'] = token;
             const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}/v2/api/user/check`)).data;
-            console.log(result);
-            this.$emit('emit-toggleLoading');
+            
+            this.isLoading=false;
             if(!result.success){
               Swal.fire({
                 icon: "error",
@@ -175,19 +181,28 @@ export default {
               });
               this.logout();
               this.$router.push('member')
+            }else{
+              this.$router.push({name: 'products'});
+              return true;
             }
           }catch(err){
-            this.$emit('emit-toggleLoading');
+            this.isLoading=false;
             console.log(err);
+            Swal.fire({
+                icon: "error",
+                title: `${err.response}`,
+                showConfirmButton: false,
+                timer: 800
+              });
           }
         },
         async logout(){
           try {
-            this.$emit('emit-toggleLoading');
+            this.isLoading=true;
             const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}/v2/logout`));
             console.log(result);
             document.cookie=`hexToken='';expires=Thu, 01 Jan 1970 00:00:00 UTC`;
-            this.$emit('emit-toggleLoading');
+            this.isLoading=false;
             Swal.fire({
               icon: "success",
               title: "LogOut Successful",
@@ -198,7 +213,7 @@ export default {
           } catch (err) {
             console.log(err);
             document.cookie=`hexToken='';expires=Thu, 01 Jan 1970 00:00:00 UTC`;
-            this.$emit('emit-toggleLoading');
+            this.isLoading=false;
           }
         },
         isPwd(value){
@@ -210,12 +225,10 @@ export default {
             }
         }
     },
-    created(){
-        
-    },
     mounted(){
       this.isMemberPage();
       this.isDashboardPage();
+      this.checkLogin();
     }
 }
 </script>

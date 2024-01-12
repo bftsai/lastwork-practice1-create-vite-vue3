@@ -1,4 +1,6 @@
 <template>
+    <Loading :prop-boolean="isLoading"></Loading>
+    <Toast></Toast>
     <h1>Products List</h1>
     <div class="text-end">
         <button type="button" class="btn btn-primary" @click="openAddProductModal">增加產品</button>
@@ -32,7 +34,7 @@
     </tbody>
     </table>
     <ProductModal ref="productModal" :product="tempProduct" :edit-product="tempProduct" @emit-post-product="postProduct" @emit-path-product="pathProduct" @emit-hide-modal="hideModal"></ProductModal>
-    <DeleteModal ref="deleteModal"></DeleteModal>
+    <DeleteModal ref="deleteModal" :product="tempProduct" @emit-hide-modal="hideModal" @emit-delete-product="deleteProduct"></DeleteModal>
 </template>
 <script>
 const api_url=import.meta.env.VITE_HEX_API;
@@ -42,28 +44,32 @@ import Swal from 'sweetalert2/dist/sweetalert2.js';
 
 import ProductModal from '../components/ProductModal.vue';
 import DeleteModal from '../components/DeleteModal.vue';
+import Toast from '../components/Toast.vue';
+import Loading from '../components/Loading.vue';
 export default {
     data(){
         return {
             products: [],
             pagination: {},
             tempProduct: {},
+            isLoading: false,
         }
     },
     components: {
         ProductModal,
         DeleteModal,
+        Toast,
+        Loading,
     },
-    emits: ['emit-toggleLoading','emit-toggle-loading'],
     methods:{
         async checkLogin(){
             try{
-                this.$emit('emit-toggleLoading');
+                this.isLoading=true;
                 const token=document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,"$1",);
                 this.axios.defaults.headers.common['Authorization'] = token;
                 const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}/v2/api/user/check`)).data;
                 // console.log(result);
-                this.$emit('emit-toggleLoading');
+                this.isLoading=false;
                 if(!result.success){
                     Swal.fire({
                         icon: "error",
@@ -79,12 +85,12 @@ export default {
             }catch(err){
                 console.log(err);
                 this.$router.push({name:'member'});
-                this.$emit('emit-toggleLoading');
+                this.isLoading=false;
             }
         },
         async getProducts(page){
             try {
-                this.$emit('emit-toggleLoading');
+                this.isLoading=true;
                 const result = (await this.axios.get(`${api_url}v2/api/${api_path}/admin/products?page=${page}`)).data;
                 if(result.success){
                     Swal.fire({
@@ -103,11 +109,11 @@ export default {
                         timer: 1500,
                     });
                 }
-                this.$emit('emit-toggleLoading');
+                this.isLoading=false;
                 console.log(this.products,this.pagination);
             } catch (err) {
                 console.log(err.response);
-                this.$emit('emit-toggleLoading');
+                this.isLoading=false;
                 Swal.fire({
                     title: 'Error!',
                     icon: 'error',
@@ -120,9 +126,9 @@ export default {
         async postProduct(item){
             try {
                 this.$refs.productModal.hideModal();
-                console.log('post product',item);
+                this.isLoading=true;
                 const result = (await this.axios.post(`${api_url}v2/api/${api_path}/admin/product`,{data:item})).data;
-                console.log(result);
+                this.isLoading=false;
                 if(result.success){
                     Swal.fire({
                         title: result.message,
@@ -141,6 +147,7 @@ export default {
                 }
                 this.tempProduct={};
             } catch (err) {
+                this.isLoading=false;
                 console.log(err.response);
                     Swal.fire({
                         title: err.response,
@@ -154,10 +161,10 @@ export default {
         async pathProduct(item){
             try {
                 this.$refs.productModal.hideModal();
-                this.$emit('emit-toggleLoading');
+                this.isLoading=true;
                 const id=item.id;
                 const result = (await this.axios.put(`${api_url}v2/api/${api_path}/admin/product/${id}`,{data:item})).data;
-                this.$emit('emit-toggleLoading');
+                this.isLoading=false;
                 if(result.success){
                     Swal.fire({
                         title: result.message,
@@ -177,7 +184,7 @@ export default {
                 console.log(result);
                 this.tempProduct={};
             } catch (err) {
-                this.$emit('emit-toggleLoading');
+                this.isLoading=false;
                 console.log(err.response);
                 Swal.fire({
                         title: err.response,
@@ -186,6 +193,39 @@ export default {
                         timer: 1500,
                     });
                 this.tempProduct={};
+            }
+        },
+        async deleteProduct(item){
+            try {
+                this.$refs.deleteModal.hideModal();
+                this.isLoading=true;
+                const result = (await this.axios.delete(`${api_url}v2/api/${api_path}/admin/product/${item.id}`)).data;
+                this.isLoading=false;
+                if(result.success){
+                    Swal.fire({
+                        title: result.message,
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                    this.getProducts(1);
+                }else{
+                    Swal.fire({
+                        title: result.message,
+                        icon: 'error',
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
+                }
+            } catch (err) {
+                this.isLoading=false;
+                console.log(err.response);
+                Swal.fire({
+                        title: err.response,
+                        icon: 'error',
+                        showConfirmButton: false,
+                        timer: 1500,
+                    });
             }
         },
         openAddProductModal(){
@@ -200,7 +240,7 @@ export default {
             this.$refs.productModal.showModal();
         },
         deleteProductModal(product){
-            console.log(product);
+            this.tempProduct=product;
             this.$refs.deleteModal.showModal();
         },
         hideModal(){

@@ -3,7 +3,7 @@
         <v-form class="modal-dialog modal-xl" @submit="sendProduct" v-slot="{ errors }" novalidate>
             <div class="modal-content border-0">
             <div class="modal-header">
-                <h5 class="modal-title fs-md-4 fs-6 fw-bold" id="exampleModalLabel">新增產品</h5>
+                <h5 class="modal-title fs-md-4 fs-6 fw-bold">新增產品</h5>
                 <button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close" @click="hideModal">X</button>
             </div>
             <div class="modal-body">

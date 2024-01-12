@@ -1,7 +1,4 @@
 <template>
-  <div class="loadingBlock position-absolute z-1" v-if="loading">
-    <img src="../src/assets/images/loading2.svg" alt="" class="position-absolute start-50 top-50 translate-middle">
-  </div>
   <header class="pt-3">
     <nav class="navbar navbar-expand-lg" v-show="!isDashboard">
       <div class="container align-items-start">
@@ -27,17 +24,20 @@
           </div>
         </div>
         <div class="col-4 col-lg-2">
-          <RouterLink type="button" class="btn btn-outline-primary fs-md-4 fs-6 px-4" to="/member" v-if="isMember">{{ isLogin? '會員中心':'登入' }}</RouterLink>
+          <RouterLink type="button" class="btn btn-outline-primary fs-md-4 fs-6 px-4" to="/member" v-if="isMember">{{ checkLogin? '會員中心':'登入' }}</RouterLink>
           <div id="logBtn"></div>
         </div>
       </div>
     </nav>
   </header>
 
-  <RouterView @emit-member="isMemberPage" :isLogin="isLogin" @emit-toggle-loading="toggleLoading" @emit-dashboard-page="isDashboardPage"></RouterView>
+  <RouterView @emit-member="isMemberPage" @emit-dashboard-page="isDashboardPage"></RouterView>
 </template>
 <script>
 // import bootstrap from 'bootstrap';
+const api_url=import.meta.env.VITE_HEX_API;
+
+import Swal from 'sweetalert2/dist/sweetalert2.js';
 
 export default {
   data(){
@@ -45,39 +45,38 @@ export default {
       token: '',
       isMember: true,
       isDashboard: false,
-      isLogin: false,
-      loading: false,
+      isLoading: false,
     }
   },
   methods: {
-    toggleLoading(){
-      this.loading=!this.loading;
-    },
     isMemberPage(value){
       this.isMember=value;
-      this.checkLogin();
     },
     isDashboardPage(){
       return this.isDashboard=location.href.split('/#/')[1].includes('dashboard');
     },
-    findCookie(str){
-      const reg=new RegExp(`${str}`);
-      if(reg.test(document.cookie)){
-        this.token=document.cookie.split(`${str}=`)[1];
-        this.isLogin=true;
+    async checkLogin(){
+      try {
+        const token=document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,"$1",);
+        this.axios.defaults.headers.common['Authorization'] = token;
+        const result = (await this.axios.post(`${api_url}v2/api/user/check`)).data;
+        if(!result.success){
+          Swal.fire({
+              title: result.message,
+              icon: 'error',
+              showConfirmButton: false,
+              timer: 1500,
+          });
+        }
         return true;
-      }else{
-        this.isLogin=false;
-      }
-    },
-    checkLogin(){
-      return this.findCookie('hexToken');
-    },
-    logOut(e){
-      if(e.target.textContent==='登出'){
-        console.log('logout');
-      }else{
-        return;
+      } catch (err) {
+        console.log(err.response);
+        Swal.fire({
+            title: err.response,
+            icon: 'error',
+            showConfirmButton: false,
+            timer: 1500,
+        });
       }
     },
     toggleCollapse(){
@@ -90,7 +89,6 @@ export default {
   },
   created(){
     this.isDashboardPage();
-    this.checkLogin();
   },
   mounted(){
     
@@ -98,13 +96,6 @@ export default {
 }
 </script>
 <style lang="scss">
-.loadingBlock{
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #000000a4;
-}
 .collapse{
   transition: all 0.4s ease;
 }
