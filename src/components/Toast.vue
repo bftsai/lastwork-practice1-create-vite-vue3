@@ -1,11 +1,11 @@
 <template>
-    <div class="toast-container position-fixed bottom-0 end-0 p-3 bg-dark">
-        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast bg-dark" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
             <img src="../assets/images/imageUpload-loading-50px.svg" class="rounded me-2" alt="...">
             <strong class="me-auto">Bootstrap</strong>
             <small>11 mins ago</small>
-            <button type="button" class="btn btn-close" data-bs-dismiss="toast" aria-label="Close">X</button>
+            <button type="button" class="btn btn-close p-0" data-bs-dismiss="toast" aria-label="Close">X</button>
             </div>
             <div class="toast-body">
             Hello, world! This is a toast message.
@@ -18,16 +18,16 @@ import Toast from 'bootstrap/js/dist/toast.js'
 export default {
     data(){
         return {
-
+            toasts:[],
         }
     },
     methods: {
         init(){
             const toastElList = document.querySelectorAll('.toast');
-            [...toastElList].map(toastEl => new Toast(toastEl, {
+            this.toasts=[...toastElList].map(toastEl => new Toast(toastEl, {
                 animation: true,
                 autohide: true,
-                delay: 400,
+                delay: 10000,
             }))
         },
         showToast(){
@@ -39,6 +39,10 @@ export default {
     },
     mounted(){
         this.init();
+        console.log(this.toasts);
+        this.toasts.forEach(item=>{
+            item.show()
+        })
     },
 }
 </script>
