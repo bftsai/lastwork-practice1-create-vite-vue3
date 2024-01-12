@@ -23,7 +23,7 @@
             </ul>
           </div>
         </div>
-        <div class="col-4 col-lg-2">
+        <div class="col-4 col-lg-2 d-flex justify-content-end">
           <RouterLink type="button" class="btn btn-outline-primary fs-md-4 fs-6 px-4" to="/member" v-if="isMember">{{ isLogin? '會員中心':'登入' }}</RouterLink>
           <div id="logBtn"></div>
         </div>

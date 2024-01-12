@@ -132,7 +132,7 @@ export default {
             try {
                 this.isLoading=true;
                 const result=(await this.axios.post(`${import.meta.env.VITE_HEX_API}v2/admin/signin`,this.user)).data;
-                
+                console.log(result);
                 document.cookie=`hexToken=${result.token};expires=${new Date(result.required)}`;
                 this.axios.defaults.headers.common['Authorization'] = result.token;
                 this.user.username='';
@@ -149,6 +149,12 @@ export default {
             } catch (err) {
                 console.log(err);
                 this.isLoading=false;
+                Swal.fire({
+                  icon: "error",
+                  title: err.response.data.message,
+                  showConfirmButton: false,
+                  timer: 800,
+                });
                 this.logout();
             }
         },

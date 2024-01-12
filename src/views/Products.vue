@@ -71,21 +71,14 @@ export default {
                 // console.log(result);
                 this.isLoading=false;
                 if(!result.success){
-                    Swal.fire({
-                        icon: "error",
-                        title: `${result.message}`,
-                        showConfirmButton: false,
-                        timer: 800
-                    });
-                    this.logout();
                     this.$router.push({name:'member'});
                 }else{
                     this.getProducts(1);
                 }
             }catch(err){
+                this.isLoading=false;
                 console.log(err);
                 this.$router.push({name:'member'});
-                this.isLoading=false;
             }
         },
         async getProducts(page){
