@@ -24,7 +24,7 @@
           </div>
         </div>
         <div class="col-4 col-lg-2">
-          <RouterLink type="button" class="btn btn-outline-primary fs-md-4 fs-6 px-4" to="/member" v-if="isMember">{{ checkLogin? '會員中心':'登入' }}</RouterLink>
+          <RouterLink type="button" class="btn btn-outline-primary fs-md-4 fs-6 px-4" to="/member" v-if="isMember">{{ isLogin? '會員中心':'登入' }}</RouterLink>
           <div id="logBtn"></div>
         </div>
       </div>
@@ -37,15 +37,13 @@
 // import bootstrap from 'bootstrap';
 const api_url=import.meta.env.VITE_HEX_API;
 
-import Swal from 'sweetalert2/dist/sweetalert2.js';
-
 export default {
   data(){
     return {
       token: '',
       isMember: true,
       isDashboard: false,
-      isLoading: false,
+      isLogin: false,
     }
   },
   methods: {
@@ -61,22 +59,13 @@ export default {
         this.axios.defaults.headers.common['Authorization'] = token;
         const result = (await this.axios.post(`${api_url}v2/api/user/check`)).data;
         if(!result.success){
-          Swal.fire({
-              title: result.message,
-              icon: 'error',
-              showConfirmButton: false,
-              timer: 1500,
-          });
+          this.isLogin=false;
+        }else{
+          this.isLogin=true;
         }
-        return true;
       } catch (err) {
         console.log(err.response);
-        Swal.fire({
-            title: err.response,
-            icon: 'error',
-            showConfirmButton: false,
-            timer: 1500,
-        });
+        this.isLogin=false;
       }
     },
     toggleCollapse(){
@@ -87,11 +76,8 @@ export default {
       }
     },
   },
-  created(){
-    this.isDashboardPage();
-  },
   mounted(){
-    
+    this.isDashboardPage();
   }
 }
 </script>

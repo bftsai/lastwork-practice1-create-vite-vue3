@@ -1,10 +1,10 @@
 <template>
     <Loading :prop-boolean="isLoading"></Loading>
     <div class="member">
-        <teleport to='#logBtn' v-if="checkLogin">
+        <teleport to='#logBtn' v-if="stateLogin">
           <button class="btn btn-outline-primary fs-md-4 fs-6" @click="logout">登出</button>
         </teleport>
-        <div class="section" v-if="!checkLogin">
+        <div class="section" v-if="!stateLogin">
             <div class="container">
                 <div class="row full-height justify-content-center">
                     <div class="col-12 text-center align-self-center py-5">
@@ -107,6 +107,7 @@ export default {
               "password": ""
           },
           isLoading: false,
+          stateLogin: false,
         }
     },
     emits: ['emit-member','emit-dashboard-page'],
@@ -173,27 +174,16 @@ export default {
             
             this.isLoading=false;
             if(!result.success){
-              Swal.fire({
-                icon: "error",
-                title: `${result.message}`,
-                showConfirmButton: false,
-                timer: 800
-              });
               this.logout();
-              this.$router.push('member')
+              this.stateLogin=false;
             }else{
               this.$router.push({name: 'products'});
-              return true;
+              this.stateLogin=true;
             }
           }catch(err){
             this.isLoading=false;
             console.log(err);
-            Swal.fire({
-                icon: "error",
-                title: `${err.response}`,
-                showConfirmButton: false,
-                timer: 800
-              });
+            return false;
           }
         },
         async logout(){
@@ -203,13 +193,6 @@ export default {
             console.log(result);
             document.cookie=`hexToken='';expires=Thu, 01 Jan 1970 00:00:00 UTC`;
             this.isLoading=false;
-            Swal.fire({
-              icon: "success",
-              title: "LogOut Successful",
-              showConfirmButton: false,
-              timer: 800
-            });
-            this.isMemberPage();
           } catch (err) {
             console.log(err);
             document.cookie=`hexToken='';expires=Thu, 01 Jan 1970 00:00:00 UTC`;

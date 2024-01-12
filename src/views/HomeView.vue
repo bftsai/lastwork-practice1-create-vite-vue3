@@ -10,8 +10,8 @@
 <script>
 const api_url=import.meta.env.VITE_HEX_API;
 
-import Swal from 'sweetalert2/dist/sweetalert2.js';
 import Loading from '../components/Loading.vue';
+
 export default {
   data(){
     return {
@@ -35,38 +35,24 @@ export default {
     },
     async checkLogin(){
       try {
-        this.isLoading=true;
         const token=document.cookie.replace(/(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,"$1",);
         this.axios.defaults.headers.common['Authorization'] = token;
-        const result = (await this.axios.post(`${api_url}v2/api/user/check`)).data;
+        this.isLoading = true;
+        const result = (await this.axios.post(`${api_url}/v2/api/user/check`)).data;
         this.isLoading=false;
         if(!result.success){
-          Swal.fire({
-              title: result.message,
-              icon: 'error',
-              showConfirmButton: false,
-              timer: 1500,
-          });
-          this.$router.push({name:'member'});
+          console.log(result);
         }
-        return true;
       } catch (err) {
-        console.log(err.response);
         this.isLoading=false;
-        Swal.fire({
-            title: err.response,
-            icon: 'error',
-            showConfirmButton: false,
-            timer: 1500,
-        });
-        this.$router.push({name:'member'});
+        console.log(err.response.data.message);
       }
     },
   },
   mounted(){
+    this.checkLogin();
     this.isMemberPage();
     this.isDashboardPage();
-    this.checkLogin();
   }
 }
 </script>
