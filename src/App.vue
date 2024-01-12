@@ -34,12 +34,13 @@
   <RouterView @emit-member="isMemberPage" @emit-dashboard-page="isDashboardPage"></RouterView>
 </template>
 <script>
-// import bootstrap from 'bootstrap';
+import Collapse from 'bootstrap/js/dist/collapse.js';
 const api_url=import.meta.env.VITE_HEX_API;
 
 export default {
   data(){
     return {
+      collapse: {},
       token: '',
       isMember: true,
       isDashboard: false,
@@ -47,6 +48,15 @@ export default {
     }
   },
   methods: {
+    initBootstrapComponents(){
+      const bsCollapse = new Collapse(this.$refs.collapse, {
+        toggle: false
+      });
+      this.collapse=bsCollapse;
+    },
+    toggleCollapse(){
+      this.collapse.toggle();
+    },
     isMemberPage(value){
       this.isMember=value;
     },
@@ -68,16 +78,10 @@ export default {
         this.isLogin=false;
       }
     },
-    toggleCollapse(){
-      if(this.$refs.collapse.className.includes('show')){
-        this.$refs.collapse.classList.remove('show');
-      }else{
-        this.$refs.collapse.classList.add('show');
-      }
-    },
   },
   mounted(){
     this.isDashboardPage();
+    this.initBootstrapComponents();
   }
 }
 </script>
