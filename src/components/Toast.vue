@@ -16,27 +16,28 @@ import Toast from 'bootstrap/js/dist/toast.js';
 
 export default {
     name: 'Toast',
+    props: ['msg'],
     data(){
         return {
-            toast:{},
+            toast: {},
         }
     },
-    props: ['msg',''],
     methods: {
         closeToast(){
-            console.dir(this.$refs.toast);
-            // this.$refs.toast.hide();
+            this.toast._element.remove()
         }
     },
     mounted(){
         const toastEl = this.$refs.toast;
-        const toast=new Toast(toastEl, {
-            // animation: true,
-            // autohide: false,
+        this.toast = new Toast(toastEl, {
+            animation: true,
+            autohide: false,
             delay: 1000,
         })
-        toast.show();
-        
+        this.toast.show();
+        setTimeout(() => {
+            this.toast._element.remove()
+        }, 1400);
     },
 }
 </script>

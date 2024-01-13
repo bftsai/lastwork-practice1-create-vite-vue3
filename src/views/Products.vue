@@ -1,8 +1,6 @@
 <template>
     <Loading :prop-boolean="isLoading"></Loading>
     <ToastList></ToastList>
-    <button type="button" class="btn btn-primary" @click="successToast">showToast</button>
-    <button type="button" class="btn btn-primary" @click="errorToast">showToast</button>
     <h1>Products List</h1>
     <div class="text-end">
         <button type="button" class="btn btn-primary" @click="openAddProductModal">增加產品</button>
@@ -255,9 +253,6 @@ export default {
                 content: '更新失敗內容' // result.message
             });
         }
-    },
-    created(){
-        
     },
     mounted(){
         this.checkLogin();
