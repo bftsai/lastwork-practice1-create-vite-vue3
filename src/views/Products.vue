@@ -1,6 +1,8 @@
 <template>
     <Loading :prop-boolean="isLoading"></Loading>
-    <Toast></Toast>
+    <ToastList></ToastList>
+    <button type="button" class="btn btn-primary" @click="successToast">showToast</button>
+    <button type="button" class="btn btn-primary" @click="errorToast">showToast</button>
     <h1>Products List</h1>
     <div class="text-end">
         <button type="button" class="btn btn-primary" @click="openAddProductModal">增加產品</button>
@@ -44,7 +46,7 @@ import Swal from 'sweetalert2/dist/sweetalert2.js';
 
 import ProductModal from '../components/ProductModal.vue';
 import DeleteModal from '../components/DeleteModal.vue';
-import Toast from '../components/Toast.vue';
+import ToastList from '../components/ToastMessage.vue';
 import Loading from '../components/Loading.vue';
 export default {
     data(){
@@ -55,10 +57,11 @@ export default {
             isLoading: false,
         }
     },
+    inject: ['emitter'],
     components: {
         ProductModal,
         DeleteModal,
-        Toast,
+        ToastList,
         Loading,
     },
     methods:{
@@ -238,6 +241,19 @@ export default {
         },
         hideModal(){
             this.tempProduct={};
+        },
+        successToast(){
+            this.emitter.emit('push-message',{
+                style: 'success',
+                title: '更新成功'
+            });
+        },
+        errorToast(){
+            this.emitter.emit('push-message',{
+                style: 'danger',
+                title: '更新失敗',
+                content: '更新失敗內容' // result.message
+            });
         }
     },
     created(){

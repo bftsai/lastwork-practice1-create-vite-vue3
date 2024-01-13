@@ -1,48 +1,42 @@
 <template>
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="liveToast" class="toast bg-dark" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-            <img src="../assets/images/imageUpload-loading-50px.svg" class="rounded me-2" alt="...">
+    <div class="toast bg-dark" role="alert" aria-live="assertive" aria-atomic="true" ref="toast">
+        <div class="toast-header">
+            <span :class="`bg-${msg.style}`" class="p-2 d-inline-block"></span>
+            <strong class="me-auto">{{ msg.title }}</strong>
             <strong class="me-auto">Bootstrap</strong>
-            <small>11 mins ago</small>
-            <button type="button" class="btn btn-close p-0" data-bs-dismiss="toast" aria-label="Close">X</button>
-            </div>
-            <div class="toast-body">
-            Hello, world! This is a toast message.
-            </div>
+            <button type="button" class="btn btn-close p-0" data-bs-dismiss="toast" aria-label="Close" @click="closeToast">X</button>
+        </div>
+        <div class="toast-body" v-if="msg.content">
+                {{msg.content}}
         </div>
     </div>
 </template>
 <script>
-import Toast from 'bootstrap/js/dist/toast.js'
+import Toast from 'bootstrap/js/dist/toast.js';
+
 export default {
+    name: 'Toast',
     data(){
         return {
-            toasts:[],
+            toast:{},
         }
     },
+    props: ['msg',''],
     methods: {
-        init(){
-            const toastElList = document.querySelectorAll('.toast');
-            this.toasts=[...toastElList].map(toastEl => new Toast(toastEl, {
-                animation: true,
-                autohide: true,
-                delay: 10000,
-            }))
-        },
-        showToast(){
-
-        },
-        hideToast(){
-
-        },
+        closeToast(){
+            console.dir(this.$refs.toast);
+            // this.$refs.toast.hide();
+        }
     },
     mounted(){
-        this.init();
-        console.log(this.toasts);
-        this.toasts.forEach(item=>{
-            item.show()
+        const toastEl = this.$refs.toast;
+        const toast=new Toast(toastEl, {
+            // animation: true,
+            // autohide: false,
+            delay: 1000,
         })
+        toast.show();
+        
     },
 }
 </script>

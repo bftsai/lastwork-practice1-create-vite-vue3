@@ -10,6 +10,7 @@ const api_url=import.meta.env.VITE_HEX_API;
 const api_path=import.meta.env.VITE_HEX_APIKEY;
 
 import Swal from 'sweetalert2/dist/sweetalert2.js';
+import emitter from '@/methods/emitter.js';
 
 import Navbar from '../components/Navbar.vue';
 import Loading from '../components/Loading.vue';
@@ -24,6 +25,11 @@ export default {
   components: {
     Navbar,
     Loading,
+  },
+  provide(){
+    return {
+      emitter,
+    }
   },
   methods: {
     isMemberPage(){
