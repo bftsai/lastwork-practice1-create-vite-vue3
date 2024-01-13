@@ -82,6 +82,7 @@ export default {
   mounted(){
     this.isDashboardPage();
     this.initBootstrapComponents();
+    this.checkLogin();
   }
 }
 </script>
