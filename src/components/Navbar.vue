@@ -1,20 +1,20 @@
 <template>
     <nav class="navbar navbar-expand-lg">
       <div class="container">
-          <a class="navbar-brand" href="#">Navbar</a>
+          <router-link class="navbar-brand" to="/">首頁</router-link>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav">
               <li class="nav-item">
-              <a class="nav-link  fs-md-4 fs-6 active" aria-current="page" href="#">Home</a>
+                <router-link class="nav-link fs-md-4 fs-6" to="/dashboard/products">Products</router-link>
               </li>
               <li class="nav-item">
-              <a class="nav-link  fs-md-4 fs-6" href="#">Features</a>
+                <router-link class="nav-link fs-md-4 fs-6" to="/dashboard/orders">Orders</router-link>
               </li>
               <li class="nav-item">
-              <a class="nav-link  fs-md-4 fs-6" href="#">Pricing</a>
+                <router-link class="nav-link fs-md-4 fs-6" to="/dashboard/coupon">Coupon</router-link>
               </li>
               <li class="nav-item">
               <a class="nav-link  fs-md-4 fs-6" @click="logout">Log Out</a>

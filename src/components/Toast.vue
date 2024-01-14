@@ -32,12 +32,12 @@ export default {
         this.toast = new Toast(toastEl, {
             animation: true,
             autohide: false,
-            delay: 1000,
+            delay: 3000,
         })
         this.toast.show();
         setTimeout(() => {
             this.toast._element.remove()
-        }, 1400);
+        }, 3400);
     },
 }
 </script>

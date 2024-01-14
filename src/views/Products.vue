@@ -1,7 +1,7 @@
 <template>
     <Loading :prop-boolean="isLoading"></Loading>
     <ToastList></ToastList>
-    <h1>Products List</h1>
+    <h1 class="text-center text-primary">Products List</h1>
     <div class="text-end">
         <button type="button" class="btn btn-primary" @click="openAddProductModal">增加產品</button>
     </div>
@@ -20,8 +20,8 @@
         <tr class="line-height-60" v-for="item in products" :key="item.id">
             <td>{{ item.category }}</td>
             <td>{{ item.title }}</td>
-            <td class="text-end">{{ item.origin_price }}</td>
-            <td class="text-end">{{item.price}}</td>
+            <td class="text-end">{{ $filters.thousands(item.origin_price) }}</td>
+            <td class="text-end">{{ $filters.thousands(item.price) }}</td>
             <td class="text-center">
                 <span class="text-success" v-if="item.is_enabled">啟用</span>
                 <span class="text-secondary" v-else>未啟用</span>
@@ -33,6 +33,7 @@
         </tr>
     </tbody>
     </table>
+    <Pagination v-if="pagination.total_pages" :prop-pagination-obj="pagination" @emit-page="getProducts"></Pagination>
     <ProductModal ref="productModal" :product="tempProduct" :edit-product="tempProduct" @emit-post-product="postProduct" @emit-path-product="pathProduct" @emit-hide-modal="hideModal"></ProductModal>
     <DeleteModal ref="deleteModal" :product="tempProduct" @emit-hide-modal="hideModal" @emit-delete-product="deleteProduct"></DeleteModal>
 </template>
@@ -40,11 +41,10 @@
 const api_url=import.meta.env.VITE_HEX_API;
 const api_path=import.meta.env.VITE_HEX_APIKEY;
 
-import Swal from 'sweetalert2/dist/sweetalert2.js';
-
 import ProductModal from '../components/ProductModal.vue';
 import DeleteModal from '../components/DeleteModal.vue';
 import ToastList from '../components/ToastMessage.vue';
+import Pagination from '../components/Pagination.vue';
 import Loading from '../components/Loading.vue';
 export default {
     data(){
@@ -55,11 +55,12 @@ export default {
             isLoading: false,
         }
     },
-    inject: ['emitter'],
+    inject: ['emitter','Swal'],
     components: {
         ProductModal,
         DeleteModal,
         ToastList,
+        Pagination,
         Loading,
     },
     methods:{
@@ -82,12 +83,12 @@ export default {
                 this.$router.push({name:'member'});
             }
         },
-        async getProducts(page){
+        async getProducts(page = 1){
             try {
                 this.isLoading=true;
                 const result = (await this.axios.get(`${api_url}v2/api/${api_path}/admin/products?page=${page}`)).data;
                 if(result.success){
-                    Swal.fire({
+                    this.Swal.fire({
                         title: '已取得產品列表!',
                         icon: 'success',
                         showConfirmButton: false,
@@ -96,7 +97,7 @@ export default {
                     this.products=result.products;
                     this.pagination=result.pagination;
                 }else{
-                    Swal.fire({
+                    this.Swal.fire({
                         title: 'Error!',
                         icon: 'error',
                         showConfirmButton: false,
@@ -104,11 +105,11 @@ export default {
                     });
                 }
                 this.isLoading=false;
-                console.log(this.products,this.pagination);
+                // console.log(this.products,this.pagination);
             } catch (err) {
                 console.log(err.response);
                 this.isLoading=false;
-                Swal.fire({
+                this.Swal.fire({
                     title: 'Error!',
                     icon: 'error',
                     showConfirmButton: false,
@@ -124,7 +125,7 @@ export default {
                 const result = (await this.axios.post(`${api_url}v2/api/${api_path}/admin/product`,{data:item})).data;
                 this.isLoading=false;
                 if(result.success){
-                    Swal.fire({
+                    this.Swal.fire({
                         title: result.message,
                         icon: 'success',
                         showConfirmButton: false,
@@ -132,7 +133,7 @@ export default {
                     });
                     this.getProducts(1);
                 }else{
-                    Swal.fire({
+                    this.Swal.fire({
                         title: result.message,
                         icon: 'error',
                         showConfirmButton: false,
@@ -143,7 +144,7 @@ export default {
             } catch (err) {
                 this.isLoading=false;
                 console.log(err.response);
-                    Swal.fire({
+                    this.Swal.fire({
                         title: err.response,
                         icon: 'error',
                         showConfirmButton: false,
@@ -160,7 +161,7 @@ export default {
                 const result = (await this.axios.put(`${api_url}v2/api/${api_path}/admin/product/${id}`,{data:item})).data;
                 this.isLoading=false;
                 if(result.success){
-                    Swal.fire({
+                    this.Swal.fire({
                         title: result.message,
                         icon: 'success',
                         showConfirmButton: false,
@@ -168,7 +169,7 @@ export default {
                     });
                     this.getProducts(1);
                 }else{
-                    Swal.fire({
+                    this.Swal.fire({
                         title: result.message,
                         icon: 'error',
                         showConfirmButton: false,
@@ -180,7 +181,7 @@ export default {
             } catch (err) {
                 this.isLoading=false;
                 console.log(err.response);
-                Swal.fire({
+                this.Swal.fire({
                         title: err.response,
                         icon: 'error',
                         showConfirmButton: false,
@@ -196,7 +197,7 @@ export default {
                 const result = (await this.axios.delete(`${api_url}v2/api/${api_path}/admin/product/${item.id}`)).data;
                 this.isLoading=false;
                 if(result.success){
-                    Swal.fire({
+                    this.Swal.fire({
                         title: result.message,
                         icon: 'success',
                         showConfirmButton: false,
@@ -204,7 +205,7 @@ export default {
                     });
                     this.getProducts(1);
                 }else{
-                    Swal.fire({
+                    this.Swal.fire({
                         title: result.message,
                         icon: 'error',
                         showConfirmButton: false,
@@ -214,7 +215,7 @@ export default {
             } catch (err) {
                 this.isLoading=false;
                 console.log(err.response);
-                Swal.fire({
+                this.Swal.fire({
                         title: err.response,
                         icon: 'error',
                         showConfirmButton: false,
@@ -252,7 +253,7 @@ export default {
                 title: '更新失敗',
                 content: '更新失敗內容' // result.message
             });
-        }
+        },
     },
     mounted(){
         this.checkLogin();

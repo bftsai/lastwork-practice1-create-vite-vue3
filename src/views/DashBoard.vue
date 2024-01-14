@@ -29,6 +29,8 @@ export default {
   provide(){
     return {
       emitter,
+      Swal,
+      Loading,
     }
   },
   methods: {
